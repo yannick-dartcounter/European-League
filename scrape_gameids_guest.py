@@ -1,4 +1,4 @@
-# 📄 scrape_gameids_guest.py – volledige interactie met checkbox én Continue-knop
+# 📄 scrape_gameids_guest.py – wacht op modal vóór klikken op 'Continue'
 
 from playwright.sync_api import sync_playwright
 import requests
@@ -47,6 +47,13 @@ def get_game_ids_as_guest():
             page.wait_for_timeout(500)
         except:
             pass
+
+        # ✅ Wacht tot ion-modal (overlay) verdwijnt
+        try:
+            page.wait_for_selector("ion-modal", state="detached", timeout=5000)
+            print("✅ ion-modal is verdwenen")
+        except:
+            print("⚠️ Modal verdween niet automatisch – proberen toch te klikken")
 
         # ✅ Klik op oranje 'Continue' knop (hover + click)
         try:
