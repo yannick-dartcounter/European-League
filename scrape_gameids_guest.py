@@ -1,3 +1,5 @@
+# 📄 scrape_gameids_guest.py – verbeterde checkbox-detectie + fallback
+
 from playwright.sync_api import sync_playwright
 import requests
 import time
@@ -27,19 +29,23 @@ def get_game_ids_as_guest():
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Klik checkbox via <span class='icon-check_mark'>
+        # ✅ Klik checkbox <span> of container element
         try:
-            checkbox_span = page.query_selector("span.icon-check_mark")
-            if checkbox_span:
-                print("☑️ Checkbox <span> aanklikken...")
-                checkbox_span.click(force=True)
+            checkbox = (
+                page.query_selector("span.icon-check_mark") or
+                page.query_selector("div:has(span.icon-check_mark)") or
+                page.query_selector("label:has-text('akkoord')")
+            )
+            if checkbox:
+                print("☑️ Checkbox-container aanklikken...")
+                checkbox.click(force=True)
                 page.wait_for_timeout(1000)
             else:
-                print("❔ Geen checkbox <span> gevonden")
+                print("❔ Geen checkbox-container gevonden")
         except Exception as e:
             print(f"⚠️ Fout bij checkbox: {e}")
 
-        # ✅ Klik juiste 'Continue' knop via klasse
+        # ✅ Klik juiste 'Continue' knop
         try:
             correct_button = page.query_selector("button.bg-orange") or \
                              page.get_by_role("button", name="Continue")
@@ -55,25 +61,17 @@ def get_game_ids_as_guest():
         page.screenshot(path=SCREENSHOT_PATH)
         print("📸 Screenshot opgeslagen als screenshot_guest.png")
 
-        print("🔎 Zoek 'View details' knoppen...")
-        view_buttons = page.query_selector_all("button:has-text('View details')")
+        print("🔍 Zoek links naar wedstrijdstatistieken...")
+        links = page.query_selector_all("a")
         game_ids = []
 
-        for i, btn in enumerate(view_buttons):
-            try:
-                print(f"🔘 Klik View details knop {i+1}/{len(view_buttons)}")
-                btn.click(force=True)
-                page.wait_for_timeout(1000)
-                url = page.url
-                if "gameId=" in url:
-                    gid = url.split("gameId=")[-1].split("&")[0]
-                    if gid not in game_ids:
-                        game_ids.append(gid)
-                        print("✅ Gevonden gameId:", gid)
-                page.go_back()
-                page.wait_for_timeout(1000)
-            except Exception as e:
-                print(f"⚠️ Kon knop {i+1} niet verwerken: {e}")
+        for link in links:
+            href = link.get_attribute("href")
+            if href and "/statistics/match/details?gameId=" in href:
+                gid = href.split("gameId=")[-1].split("&")[0]
+                if gid not in game_ids:
+                    game_ids.append(gid)
+                    print("✅ Gevonden gameId:", gid)
 
         browser.close()
         return game_ids
