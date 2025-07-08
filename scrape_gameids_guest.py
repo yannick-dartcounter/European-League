@@ -1,4 +1,4 @@
-# 📄 scrape_gameids_guest.py – klik correcte 'Continue' knop na checkbox
+# 📄 scrape_gameids_guest.py – volledige interactie met checkbox én Continue-knop
 
 from playwright.sync_api import sync_playwright
 import requests
@@ -41,17 +41,25 @@ def get_game_ids_as_guest():
         except Exception as e:
             print(f"⚠️ Fout bij aanklikken checkbox-div: {e}")
 
-        # ✅ Klik expliciete 'Continue' knop (oranje knop na akkoord)
+        # ✅ Forceer focuswisseling voor juiste trigger van 'Continue'
         try:
-            orange_continue = page.query_selector("button.bg-orange")
+            page.keyboard.press("Tab")
+            page.wait_for_timeout(500)
+        except:
+            pass
+
+        # ✅ Klik op oranje 'Continue' knop (hover + click)
+        try:
+            orange_continue = page.query_selector("button:has-text('Continue')")
             if orange_continue:
-                print("➡️ Klik oranje 'Continue'-knop...")
+                print("➡️ Hover + klik op 'Continue'...")
+                orange_continue.hover()
                 orange_continue.click(force=True)
                 page.wait_for_timeout(3000)
             else:
-                print("❌ Geen oranje 'Continue'-knop gevonden")
+                print("❌ 'Continue'-knop niet gevonden")
         except Exception as e:
-            print(f"⚠️ Fout bij klikken op oranje 'Continue': {e}")
+            print(f"⚠️ Fout bij klikken op 'Continue': {e}")
 
         page.screenshot(path=SCREENSHOT_PATH)
         print("📸 Screenshot opgeslagen als screenshot_guest.png")
