@@ -1,54 +1,65 @@
 import streamlit as st
 import pandas as pd
 import requests
+from bs4 import BeautifulSoup
 
-# Basisconfiguratie
-TOURNAMENT_ID = "2piSdd"
-API_BASE = "https://dartcounter.app"
-TOURNAMENT_API = f"{API_BASE}/api/tournaments/{TOURNAMENT_ID}"
-MATCHES_API = f"{API_BASE}/api/tournaments/{TOURNAMENT_ID}/matches"
-STATS_API = f"{API_BASE}/api/tournaments/{TOURNAMENT_ID}/stats"
+# --- CONFIG ---
+TOERNOOI_URL = "https://dartcounter.app/tournaments/european-league-day-2-2piSdd"
 
-st.title("DartCounter Toernooi Dashboard")
+st.title("🎯 DartCounter Toernooi Dashboard")
+st.caption(f"Data van: {TOERNOOI_URL}")
 
-# Ophalen van gegevens uit de DartCounter API
-try:
-    tournament = requests.get(TOURNAMENT_API).json()
-    matches = requests.get(MATCHES_API).json()
-    stats = requests.get(STATS_API).json()
-except Exception as e:
-    st.error(f"Kon data niet ophalen: {e}")
-    st.stop()
+# --- Scraper functie ---
+@st.cache_data
+def scrape_tournament_stats(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        st.error(f"Kon pagina niet ophalen: {response.status_code}")
+        return pd.DataFrame()
+    
+    soup = BeautifulSoup(response.text, "html.parser")
+    
+    # Zoek de juiste tabel (op basis van header tekst)
+    tables = soup.find_all("table")
+    df = None
 
-st.subheader(f"Toernooi: {tournament['name']}")
-st.write(f"Aantal wedstrijden: {len(matches)}")
+    for table in tables:
+        headers = [th.text.strip() for th in table.find_all("th")]
+        if "Player" in headers and "180s" in headers:
+            rows = []
+            for row in table.find_all("tr")[1:]:
+                cells = [td.text.strip() for td in row.find_all("td")]
+                if cells:
+                    rows.append(cells)
+            df = pd.DataFrame(rows, columns=headers)
+            break
 
-# Verwerken van spelerstatistieken
-players_data = []
-for sp in stats["players"]:
-    players_data.append({
-        "Naam": sp["name"],
-        "Gespeelde wedstrijden": sp.get("matchesPlayed", 0),
-        "Gewonnen": sp.get("matchesWon", 0),
-        "Legs voor": sp.get("legsFor", 0),
-        "Legs tegen": sp.get("legsAgainst", 0),
-        "Saldo": sp.get("legsFor", 0) - sp.get("legsAgainst", 0),
-        "180'ers": sp.get("count180", 0),
-        "High Finish": sp.get("highFinish", 0),
-    })
+    return df
 
-# Zet in een DataFrame
-players_df = pd.DataFrame(players_data)
+# --- Ophalen & tonen ---
+data = scrape_tournament_stats(TOERNOOI_URL)
 
-# Tabel tonen
-st.subheader("Statistieken per speler")
-st.dataframe(players_df.sort_values(by="Saldo", ascending=False))
+if data.empty:
+    st.warning("Geen data gevonden. Controleer de URL of wacht even.")
+else:
+    # Eventueel converteren naar juiste types
+    numeric_cols = ["180s", "High Finish", "Legs For", "Legs Against"]
+    for col in numeric_cols:
+        if col in data.columns:
+            data[col] = pd.to_numeric(data[col], errors="coerce")
+    
+    # Legsaldo berekenen
+    if "Legs For" in data.columns and "Legs Against" in data.columns:
+        data["Legsaldo"] = data["Legs For"] - data["Legs Against"]
 
-# Grafiek: 180'ers
-st.subheader("Aantal 180'ers per speler")
-st.bar_chart(players_df.set_index("Naam")["180'ers"])
+    st.subheader("📊 Spelerstatistieken")
+    st.dataframe(data.sort_values("Legsaldo", ascending=False))
 
-# Grafiek: Legs saldo
-st.subheader("Legsaldo per speler")
-st.bar_chart(players_df.set_index("Naam")["Saldo"])
+    # Grafieken
+    if "180s" in data.columns:
+        st.subheader("🎯 Aantal 180'ers per speler")
+        st.bar_chart(data.set_index("Player")["180s"])
 
+    if "Legsaldo" in data.columns:
+        st.subheader("➕ Legsaldo per speler")
+        st.bar_chart(data.set_index("Player")["Legsaldo"])
