@@ -8,14 +8,38 @@ def save_guest_session():
         context = browser.new_context()
         page = context.new_page()
 
-        print("🌍 Open de pagina en log handmatig in als gast...")
+        print("🌍 Open pagina...")
         page.goto(URL)
+        page.wait_for_timeout(2000)
 
-        print("🕒 Wacht tot je handmatig op de bracketpagina bent...")
-        input("📲 Druk op Enter als je de bracket ziet...")
+        # Klik op 'Continue without account'
+        try:
+            guest_btn = page.get_by_text("Continue without account")
+            guest_btn.click()
+            print("👤 Gastoptie geklikt")
+            page.wait_for_timeout(2000)
+        except:
+            print("❌ Gastoptie niet gevonden")
 
-        print("💾 Sla sessie op in 'guest_state.json'")
+        # Vink checkbox aan
+        try:
+            checkbox = page.query_selector("div.flex.flex-none.items-center.justify-center.rounded-sm")
+            if checkbox:
+                checkbox.dispatch_event("click")
+                print("☑️ Checkbox geactiveerd via dispatch_event")
+                page.wait_for_timeout(1000)
+            else:
+                print("❌ Checkbox niet gevonden")
+        except Exception as e:
+            print(f"⚠️ Fout bij checkbox: {e}")
+
+        # Jij klikt nu handmatig op 'Continue'
+        print("🕹️ Klik nu handmatig op 'Continue'...")
+        input("✅ Druk op Enter zodra je de bracket ziet...")
+
+        # Sla sessie op
         context.storage_state(path="guest_state.json")
+        print("💾 Sessiestatus opgeslagen in 'guest_state.json' ✅")
 
         browser.close()
 
