@@ -19,33 +19,36 @@ def get_game_ids_as_guest():
 
         # ✅ Klik op 'Continue without account'
         try:
-            if page.locator("text=Continue without account").is_visible():
+            continue_guest = page.get_by_text("Continue without account")
+            if continue_guest.is_visible():
                 print("👤 Gastmodus activeren...")
-                page.click("text=Continue without account")
+                continue_guest.click()
                 page.wait_for_timeout(2000)
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Klik visuele checkbox als die zichtbaar is
+        # ✅ Klik checkbox via CSS-selector of class
         try:
-            checkbox_div = page.query_selector("label:has-text('Ik ga akkoord')") or \
-                           page.query_selector("div:has-text('akkoord')")
-            if checkbox_div:
-                print("☑️ Visuele checkbox aanklikken...")
-                checkbox_div.click(force=True)
+            checkbox_visual = page.query_selector(".MuiCheckbox-root") or \
+                               page.query_selector("input[type='checkbox']")
+            if checkbox_visual:
+                print("☑️ Checkbox visueel aanklikken...")
+                checkbox_visual.click(force=True)
                 page.wait_for_timeout(1000)
             else:
                 print("❔ Geen visuele checkbox gevonden")
         except Exception as e:
             print(f"⚠️ Fout bij checkbox klikken: {e}")
 
-        # ✅ Klik op 'Continue' knop om door te gaan
+        # ✅ Klik juiste 'Continue' knop – neem de derde in de lijst
         try:
-            continue_button = page.locator("button:has-text('Continue')")
-            if continue_button.is_visible():
-                print("➡️ Klik op Continue knop...")
-                continue_button.click()
+            all_buttons = page.query_selector_all("button")
+            if len(all_buttons) >= 3:
+                print("➡️ Klik derde 'Continue'-knop...")
+                all_buttons[2].click()
                 page.wait_for_timeout(2000)
+            else:
+                print("❌ Te weinig knoppen gevonden")
         except Exception as e:
             print(f"⚠️ Fout bij Continue-knop: {e}")
 
