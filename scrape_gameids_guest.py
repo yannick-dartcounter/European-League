@@ -27,31 +27,33 @@ def get_game_ids_as_guest():
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Klik visuele checkbox met bredere selector
+        # ✅ Klik checkbox visueel indien aanwezig
         try:
             checkbox_visual = (
-                page.query_selector("[role='checkbox']") or
-                page.query_selector("div[class*='checkbox']") or
+                page.query_selector("input[type='checkbox']") or
+                page.query_selector("div[role='checkbox']") or
+                page.query_selector("div[class*='check']") or
                 page.query_selector("svg")
             )
             if checkbox_visual:
-                print("☑️ Visuele checkbox aanklikken...")
+                print("☑️ Checkbox aanklikken...")
                 checkbox_visual.click(force=True)
                 page.wait_for_timeout(1000)
             else:
-                print("❔ Geen visuele checkbox gevonden")
+                print("❔ Geen checkbox gevonden")
         except Exception as e:
-            print(f"⚠️ Fout bij checkbox klikken: {e}")
+            print(f"⚠️ Fout bij checkbox: {e}")
 
-        # ✅ Klik juiste 'Continue' knop – derde in lijst
+        # ✅ Klik juiste 'Continue' knop via unieke klasse
         try:
-            all_buttons = page.query_selector_all("button")
-            if len(all_buttons) >= 3:
-                print("➡️ Klik derde 'Continue'-knop...")
-                all_buttons[2].click()
+            correct_button = page.query_selector("button.bg-orange") or \
+                             page.get_by_role("button", name="Continue")
+            if correct_button:
+                print("➡️ Klik juiste 'Continue'-knop...")
+                correct_button.click(force=True)
                 page.wait_for_timeout(2000)
             else:
-                print("❌ Te weinig knoppen gevonden")
+                print("❌ Geen geschikte 'Continue'-knop gevonden")
         except Exception as e:
             print(f"⚠️ Fout bij Continue-knop: {e}")
 
