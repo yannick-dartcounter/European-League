@@ -17,16 +17,7 @@ def get_game_ids_as_guest():
         page.goto(BRACKET_URL)
         page.wait_for_timeout(3000)
 
-        # ✅ Klik op cookie-akkoord als zichtbaar
-        try:
-            if page.locator("text=Akkoord").is_visible():
-                print("🍪 Cookie-akkoord klikken...")
-                page.click("text=Akkoord")
-                page.wait_for_timeout(1000)
-        except:
-            print("❔ Geen cookie popup gevonden")
-
-        # ✅ Klik op 'Continue without account' als zichtbaar
+        # ✅ Klik op 'Continue without account'
         try:
             if page.locator("text=Continue without account").is_visible():
                 print("👤 Gastmodus activeren...")
@@ -34,6 +25,22 @@ def get_game_ids_as_guest():
                 page.wait_for_timeout(2000)
         except:
             print("❔ Geen gastoptie zichtbaar")
+
+        # ✅ Vink toestemming aan + klik door
+        try:
+            checkbox = page.locator("input[type='checkbox']")
+            if checkbox.is_visible():
+                print("☑️ Checkbox aanvinken...")
+                checkbox.check()
+                page.wait_for_timeout(1000)
+
+                continue_button = page.locator("button:has-text('Continue')")
+                if continue_button.is_visible():
+                    print("➡️ Klik op Continue knop...")
+                    continue_button.click()
+                    page.wait_for_timeout(2000)
+        except Exception as e:
+            print(f"⚠️ Geen toestemming-popup of fout: {e}")
 
         page.screenshot(path=SCREENSHOT_PATH)
         print("📸 Screenshot opgeslagen als screenshot_guest.png")
