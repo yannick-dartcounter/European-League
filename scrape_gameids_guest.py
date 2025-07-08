@@ -27,31 +27,26 @@ def get_game_ids_as_guest():
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Klik checkbox visueel indien aanwezig
+        # ✅ Klik checkbox via <span class='icon-check_mark'>
         try:
-            checkbox_visual = (
-                page.query_selector("input[type='checkbox']") or
-                page.query_selector("div[role='checkbox']") or
-                page.query_selector("div[class*='check']") or
-                page.query_selector("svg")
-            )
-            if checkbox_visual:
-                print("☑️ Checkbox aanklikken...")
-                checkbox_visual.click(force=True)
+            checkbox_span = page.query_selector("span.icon-check_mark")
+            if checkbox_span:
+                print("☑️ Checkbox <span> aanklikken...")
+                checkbox_span.click(force=True)
                 page.wait_for_timeout(1000)
             else:
-                print("❔ Geen checkbox gevonden")
+                print("❔ Geen checkbox <span> gevonden")
         except Exception as e:
             print(f"⚠️ Fout bij checkbox: {e}")
 
-        # ✅ Klik juiste 'Continue' knop via unieke klasse
+        # ✅ Klik juiste 'Continue' knop via klasse
         try:
             correct_button = page.query_selector("button.bg-orange") or \
                              page.get_by_role("button", name="Continue")
             if correct_button:
                 print("➡️ Klik juiste 'Continue'-knop...")
                 correct_button.click(force=True)
-                page.wait_for_timeout(2000)
+                page.wait_for_timeout(3000)
             else:
                 print("❌ Geen geschikte 'Continue'-knop gevonden")
         except Exception as e:
@@ -60,17 +55,25 @@ def get_game_ids_as_guest():
         page.screenshot(path=SCREENSHOT_PATH)
         print("📸 Screenshot opgeslagen als screenshot_guest.png")
 
-        print("🔍 Zoek links naar wedstrijdstatistieken...")
-        links = page.query_selector_all("a")
+        print("🔎 Zoek 'View details' knoppen...")
+        view_buttons = page.query_selector_all("button:has-text('View details')")
         game_ids = []
 
-        for link in links:
-            href = link.get_attribute("href")
-            if href and "/statistics/match/details?gameId=" in href:
-                gid = href.split("gameId=")[-1].split("&")[0]
-                if gid not in game_ids:
-                    game_ids.append(gid)
-                    print("✅ Gevonden gameId:", gid)
+        for i, btn in enumerate(view_buttons):
+            try:
+                print(f"🔘 Klik View details knop {i+1}/{len(view_buttons)}")
+                btn.click(force=True)
+                page.wait_for_timeout(1000)
+                url = page.url
+                if "gameId=" in url:
+                    gid = url.split("gameId=")[-1].split("&")[0]
+                    if gid not in game_ids:
+                        game_ids.append(gid)
+                        print("✅ Gevonden gameId:", gid)
+                page.go_back()
+                page.wait_for_timeout(1000)
+            except Exception as e:
+                print(f"⚠️ Kon knop {i+1} niet verwerken: {e}")
 
         browser.close()
         return game_ids
