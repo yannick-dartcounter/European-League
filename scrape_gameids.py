@@ -13,6 +13,10 @@ def get_game_ids():
         page = context.new_page()
 
         page.goto(BRACKET_URL)
+        print("👀 Pagina geladen:", page.title())
+        print("🔗 URL:", page.url)
+        page.screenshot(path="screenshot.png")
+
         page.wait_for_timeout(5000)
 
         game_ids = set()
