@@ -9,7 +9,6 @@ TOURNAMENT_API = f"{API_BASE}/api/tournaments/{TOURNAMENT_ID}"
 MATCHES_API = f"{API_BASE}/api/tournaments/{TOURNAMENT_ID}/matches"
 STATS_API = f"{API_BASE}/api/tournaments/{TOURNAMENT_ID}/stats"
 
-# Zet titel van de app
 st.title("DartCounter Toernooi Dashboard")
 
 # Ophalen van gegevens uit de DartCounter API
@@ -52,3 +51,4 @@ st.bar_chart(players_df.set_index("Naam")["180'ers"])
 # Grafiek: Legs saldo
 st.subheader("Legsaldo per speler")
 st.bar_chart(players_df.set_index("Naam")["Saldo"])
+
