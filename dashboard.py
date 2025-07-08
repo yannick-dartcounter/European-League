@@ -1,65 +1,37 @@
 import streamlit as st
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+import json
 
-# --- CONFIG ---
-TOERNOOI_URL = "https://dartcounter.app/tournaments/european-league-day-2-2piSdd"
+st.title("🎯 DartCounter Game Dashboard")
 
-st.title("🎯 DartCounter Toernooi Dashboard")
-st.caption(f"Data van: {TOERNOOI_URL}")
+# 📥 Laad JSON vanaf GitHub
+GITHUB_JSON_URL = "https://raw.githubusercontent.com/<gebruikersnaam>/<repo>/main/game_data.json"
 
-# --- Scraper functie ---
-@st.cache_data
-def scrape_tournament_stats(url):
-    response = requests.get(url)
-    if response.status_code != 200:
-        st.error(f"Kon pagina niet ophalen: {response.status_code}")
-        return pd.DataFrame()
-    
-    soup = BeautifulSoup(response.text, "html.parser")
-    
-    # Zoek de juiste tabel (op basis van header tekst)
-    tables = soup.find_all("table")
-    df = None
+try:
+    response = requests.get(GITHUB_JSON_URL)
+    game_data = response.json()
+    st.success("✅ Data succesvol geladen vanaf GitHub")
+except Exception as e:
+    st.error(f"❌ Fout bij laden van JSON: {e}")
+    st.stop()
 
-    for table in tables:
-        headers = [th.text.strip() for th in table.find_all("th")]
-        if "Player" in headers and "180s" in headers:
-            rows = []
-            for row in table.find_all("tr")[1:]:
-                cells = [td.text.strip() for td in row.find_all("td")]
-                if cells:
-                    rows.append(cells)
-            df = pd.DataFrame(rows, columns=headers)
-            break
+# 👉 Bouw hierna je dashboard verder
+# Bijvoorbeeld een tabel van alle games:
+rows = []
+for game in game_data:
+    p1 = game['players'][0]['name']
+    p2 = game['players'][1]['name']
+    score = game.get('score', 'n.v.t.')
+    avg1 = game['players'][0].get('average', 0)
+    avg2 = game['players'][1].get('average', 0)
+    rows.append({
+        "Speler 1": p1,
+        "Gemiddelde 1": avg1,
+        "Speler 2": p2,
+        "Gemiddelde 2": avg2,
+        "Score": score
+    })
 
-    return df
-
-# --- Ophalen & tonen ---
-data = scrape_tournament_stats(TOERNOOI_URL)
-
-if data.empty:
-    st.warning("Geen data gevonden. Controleer de URL of wacht even.")
-else:
-    # Eventueel converteren naar juiste types
-    numeric_cols = ["180s", "High Finish", "Legs For", "Legs Against"]
-    for col in numeric_cols:
-        if col in data.columns:
-            data[col] = pd.to_numeric(data[col], errors="coerce")
-    
-    # Legsaldo berekenen
-    if "Legs For" in data.columns and "Legs Against" in data.columns:
-        data["Legsaldo"] = data["Legs For"] - data["Legs Against"]
-
-    st.subheader("📊 Spelerstatistieken")
-    st.dataframe(data.sort_values("Legsaldo", ascending=False))
-
-    # Grafieken
-    if "180s" in data.columns:
-        st.subheader("🎯 Aantal 180'ers per speler")
-        st.bar_chart(data.set_index("Player")["180s"])
-
-    if "Legsaldo" in data.columns:
-        st.subheader("➕ Legsaldo per speler")
-        st.bar_chart(data.set_index("Player")["Legsaldo"])
+df = pd.DataFrame(rows)
+st.dataframe(df.sort_values("Score", ascending=False))
