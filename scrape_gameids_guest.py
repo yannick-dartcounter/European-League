@@ -27,12 +27,15 @@ def get_game_ids_as_guest():
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Klik checkbox via CSS-selector of class
+        # ✅ Klik visuele checkbox met bredere selector
         try:
-            checkbox_visual = page.query_selector(".MuiCheckbox-root") or \
-                               page.query_selector("input[type='checkbox']")
+            checkbox_visual = (
+                page.query_selector("[role='checkbox']") or
+                page.query_selector("div[class*='checkbox']") or
+                page.query_selector("svg")
+            )
             if checkbox_visual:
-                print("☑️ Checkbox visueel aanklikken...")
+                print("☑️ Visuele checkbox aanklikken...")
                 checkbox_visual.click(force=True)
                 page.wait_for_timeout(1000)
             else:
@@ -40,7 +43,7 @@ def get_game_ids_as_guest():
         except Exception as e:
             print(f"⚠️ Fout bij checkbox klikken: {e}")
 
-        # ✅ Klik juiste 'Continue' knop – neem de derde in de lijst
+        # ✅ Klik juiste 'Continue' knop – derde in lijst
         try:
             all_buttons = page.query_selector_all("button")
             if len(all_buttons) >= 3:
