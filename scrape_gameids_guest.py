@@ -1,4 +1,4 @@
-# 📄 scrape_gameids_guest.py – verbeterde checkbox-detectie + fallback
+# 📄 scrape_gameids_guest.py – klik complete checkbox-container
 
 from playwright.sync_api import sync_playwright
 import requests
@@ -29,21 +29,19 @@ def get_game_ids_as_guest():
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Klik checkbox <span> of container element
+        # ✅ Klik op checkbox-container (brede selectie)
         try:
-            checkbox = (
-                page.query_selector("span.icon-check_mark") or
-                page.query_selector("div:has(span.icon-check_mark)") or
-                page.query_selector("label:has-text('akkoord')")
-            )
-            if checkbox:
-                print("☑️ Checkbox-container aanklikken...")
-                checkbox.click(force=True)
+            accept_area = page.query_selector("div:has(span.icon-check_mark)") or \
+                          page.query_selector("div:has-text('akkoord')") or \
+                          page.query_selector("div[class*='cursor-pointer']")
+            if accept_area:
+                print("☑️ Klik op checkbox-container...")
+                accept_area.click(force=True)
                 page.wait_for_timeout(1000)
             else:
-                print("❔ Geen checkbox-container gevonden")
+                print("❔ Checkbox-container niet gevonden")
         except Exception as e:
-            print(f"⚠️ Fout bij checkbox: {e}")
+            print(f"⚠️ Fout bij aanklikken checkbox-container: {e}")
 
         # ✅ Klik juiste 'Continue' knop
         try:
