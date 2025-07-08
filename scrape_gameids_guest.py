@@ -26,21 +26,28 @@ def get_game_ids_as_guest():
         except:
             print("❔ Geen gastoptie zichtbaar")
 
-        # ✅ Vink toestemming aan + klik door
+        # ✅ Klik visuele checkbox als die zichtbaar is
         try:
-            checkbox = page.locator("input[type='checkbox']")
-            if checkbox.is_visible():
-                print("☑️ Checkbox aanvinken...")
-                checkbox.check()
+            checkbox_div = page.query_selector("label:has-text('Ik ga akkoord')") or \
+                           page.query_selector("div:has-text('akkoord')")
+            if checkbox_div:
+                print("☑️ Visuele checkbox aanklikken...")
+                checkbox_div.click(force=True)
                 page.wait_for_timeout(1000)
-
-                continue_button = page.locator("button:has-text('Continue')")
-                if continue_button.is_visible():
-                    print("➡️ Klik op Continue knop...")
-                    continue_button.click()
-                    page.wait_for_timeout(2000)
+            else:
+                print("❔ Geen visuele checkbox gevonden")
         except Exception as e:
-            print(f"⚠️ Geen toestemming-popup of fout: {e}")
+            print(f"⚠️ Fout bij checkbox klikken: {e}")
+
+        # ✅ Klik op 'Continue' knop om door te gaan
+        try:
+            continue_button = page.locator("button:has-text('Continue')")
+            if continue_button.is_visible():
+                print("➡️ Klik op Continue knop...")
+                continue_button.click()
+                page.wait_for_timeout(2000)
+        except Exception as e:
+            print(f"⚠️ Fout bij Continue-knop: {e}")
 
         page.screenshot(path=SCREENSHOT_PATH)
         print("📸 Screenshot opgeslagen als screenshot_guest.png")
