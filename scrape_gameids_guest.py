@@ -1,4 +1,4 @@
-# 📄 scrape_gameids_guest.py – wacht op modal vóór klikken op 'Continue'
+# 📄 scrape_gameids_guest.py – wacht op redirect naar bracket i.p.v. hover()
 
 from playwright.sync_api import sync_playwright
 import requests
@@ -55,14 +55,15 @@ def get_game_ids_as_guest():
         except:
             print("⚠️ Modal verdween niet automatisch – proberen toch te klikken")
 
-        # ✅ Klik op oranje 'Continue' knop (hover + click)
+        # ✅ Klik op oranje 'Continue' knop en wacht op redirect
         try:
             orange_continue = page.query_selector("button:has-text('Continue')")
             if orange_continue:
-                print("➡️ Hover + klik op 'Continue'...")
-                orange_continue.hover()
+                print("➡️ Klik op 'Continue' en wacht op redirect...")
                 orange_continue.click(force=True)
-                page.wait_for_timeout(3000)
+                page.wait_for_url("**/bracket", timeout=10000)
+                print("✅ Doorgestuurd naar bracket-pagina")
+                page.wait_for_timeout(2000)
             else:
                 print("❌ 'Continue'-knop niet gevonden")
         except Exception as e:
