@@ -1,4 +1,4 @@
-# 📄 scrape_gameids_guest.py – klik op precieze checkbox binnenste div
+# 📄 scrape_gameids_guest.py – klik correcte 'Continue' knop na checkbox
 
 from playwright.sync_api import sync_playwright
 import requests
@@ -31,7 +31,7 @@ def get_game_ids_as_guest():
 
         # ✅ Klik op de juiste binnenste checkbox-div
         try:
-            checkbox_inner = page.query_selector("div.flex.items-center.justify-center.rounded-sm")
+            checkbox_inner = page.query_selector("div.flex.flex-none.items-center.justify-center.rounded-sm")
             if checkbox_inner:
                 print("☑️ Klik op binnenste checkbox-div...")
                 checkbox_inner.click(force=True)
@@ -41,18 +41,17 @@ def get_game_ids_as_guest():
         except Exception as e:
             print(f"⚠️ Fout bij aanklikken checkbox-div: {e}")
 
-        # ✅ Klik juiste 'Continue' knop
+        # ✅ Klik expliciete 'Continue' knop (oranje knop na akkoord)
         try:
-            correct_button = page.query_selector("button.bg-orange") or \
-                             page.get_by_role("button", name="Continue")
-            if correct_button:
-                print("➡️ Klik juiste 'Continue'-knop...")
-                correct_button.click(force=True)
+            orange_continue = page.query_selector("button.bg-orange")
+            if orange_continue:
+                print("➡️ Klik oranje 'Continue'-knop...")
+                orange_continue.click(force=True)
                 page.wait_for_timeout(3000)
             else:
-                print("❌ Geen geschikte 'Continue'-knop gevonden")
+                print("❌ Geen oranje 'Continue'-knop gevonden")
         except Exception as e:
-            print(f"⚠️ Fout bij Continue-knop: {e}")
+            print(f"⚠️ Fout bij klikken op oranje 'Continue': {e}")
 
         page.screenshot(path=SCREENSHOT_PATH)
         print("📸 Screenshot opgeslagen als screenshot_guest.png")
