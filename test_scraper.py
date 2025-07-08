@@ -1,23 +1,21 @@
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
-# De toernooi-URL
-url = "https://dartcounter.app/tournaments/european-league-day-2-2piSdd"
+def test_page():
+    url = "https://app.dartcounter.net/tournaments/european-league-day-2-2piSdd/bracket"
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url)
+        page.wait_for_selector("table")  # wacht tot een <table> verschijnt
+        html = page.content()
+        print("✅ HTML geladen, lengte:", len(html))
+        if "<table" in html:
+            print("✅ Tabellen aanwezig! Eerste 500 karakters:")
+            start = html.find("<table")
+            print(html[start:start+500])
+        else:
+            print("❌ Helaas: nog steeds geen <table> gevonden.")
+        browser.close()
 
-# Haal de HTML op
-response = requests.get(url)
-print(f"Statuscode: {response.status_code}")
-
-# Print een deel van de HTML (alleen als het succesvol is)
-if response.status_code == 200:
-    soup = BeautifulSoup(response.text, "html.parser")
-    
-    # Toon de eerste <table> (of de eerste 500 tekens)
-    table = soup.find("table")
-    if table:
-        print("✅ Eerste tabel gevonden!")
-        print(table.prettify()[:1000])  # Eerste 1000 tekens van de tabel
-    else:
-        print("⚠️ Geen tabel gevonden in de HTML.")
-else:
-    print("❌ Pagina niet bereikbaar of geblokkeerd.")
+if __name__ == "__main__":
+    test_page()
