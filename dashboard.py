@@ -28,4 +28,9 @@ for game in game_data:
         continue
 
 df = pd.DataFrame(rows)
-st.dataframe(df.sort_values("Score", ascending=False))
+if "Score" in df.columns:
+    st.dataframe(df.sort_values("Score", ascending=False))
+else:
+    st.warning("⚠️ Geen 'Score'-gegevens gevonden in de game_data.json")
+    st.dataframe(df)
+
