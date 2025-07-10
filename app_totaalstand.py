@@ -45,8 +45,8 @@ df.rename(columns={
 # 🕒 Laatste update tonen
 st.caption(f"📅 Last updated: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-# 📊 Toon de tabel
-st.dataframe(df, use_container_width=True)
+# 📊 Toon de tabel zonder afkappen
+st.table(df)
 
 # 🔽 Downloadknop
 csv = df.to_csv(index=False).encode("utf-8")
