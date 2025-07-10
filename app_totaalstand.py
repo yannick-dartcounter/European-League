@@ -43,7 +43,7 @@ df.rename(columns={
 }, inplace=True)
 
 # 🚫 Verberg index (0,1,2...) in st.table
-st.dataframe(df.style.hide(axis="index"), use_container_width=True)
+df.index = [""] * len(df)
 
 # 🕒 Laatste update tonen
 st.caption(f"📅 Last updated: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
