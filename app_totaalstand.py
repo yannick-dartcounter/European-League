@@ -18,7 +18,7 @@ def laad_excel_van_github(url):
     df = pd.read_excel(BytesIO(response.content))
     last_updated = response.headers.get("Last-Modified", "")
     if last_updated:
-        last_updated = datetime.strptime(last_updated, "%a, %d %b %Y %H:%M:%S %Z")
+        last_updated = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
     else:
         last_updated = datetime.now()
     return df, last_updated
@@ -55,33 +55,19 @@ df.rename(columns={
     "Totaal": "Total"
 }, inplace=True)
 
-# 📊 AgGrid instellingen
+# 📊 AgGrid weergave
 gb = GridOptionsBuilder.from_dataframe(df)
 gb.configure_default_column(resizable=True, wrapText=True, autoHeight=True)
 gb.configure_grid_options(domLayout='autoHeight')
 gb.configure_pagination(enabled=False)
 grid_options = gb.build()
 
-# ➕ Auto-kolombreedte zoals dubbelklik
-grid_options["onFirstDataRendered"] = {
-    "function": """
-        function(params) {
-            const allColumnIds = [];
-            params.columnApi.getAllColumns().forEach(function(column) {
-                allColumnIds.push(column.colId);
-            });
-            params.columnApi.autoSizeColumns(allColumnIds, false);
-        }
-    """
-}
-
-# 📊 Toon de AgGrid-tabel
 AgGrid(
     df,
     gridOptions=grid_options,
     theme="balham",
     height=None,
-    fit_columns_on_grid_load=False,
+    fit_columns_on_grid_load=True,
     reload_data=True,
-    allow_unsafe_jscode=True
+    allow_unsafe_jscode=False
 )
