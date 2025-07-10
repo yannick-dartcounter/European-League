@@ -7,7 +7,6 @@ from datetime import datetime
 st.set_page_config(page_title="European League Ranking", layout="wide")
 st.title("🏆 Total Ranking European League")
 
-# URL naar Excel op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
 @st.cache_data(ttl=1)
@@ -31,23 +30,14 @@ def laad_excel_van_github(url):
 df, last_updated = laad_excel_van_github(url)
 
 if df is not None:
-    # Laatst bijgewerkt
     if last_updated:
         st.caption(f"📅 Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-    # Styling: smalle kolommen, verberg index
-    st.dataframe(
-        df.style.set_properties(**{
-            'text-align': 'center',
-            'max-width': '120px',
-            'white-space': 'nowrap'
-        }),
-        use_container_width=True,
-        hide_index=True
-    )
+    # Tabel tonen zonder index, automatisch compact
+    st.table(df.reset_index(drop=True))
 
     # Downloadknop
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download CSV", csv, "ranking_european_league.csv", "text/csv")
 else:
-    st.warning("⚠️ Kan totaalstand niet laden van GitHub.")
+    st.warning("⚠️ Kon totaalstand niet laden van GitHub.")
