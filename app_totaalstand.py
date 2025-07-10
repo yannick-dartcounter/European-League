@@ -18,7 +18,7 @@ def laad_excel_van_github(url):
     df = pd.read_excel(BytesIO(response.content))
     last_updated = response.headers.get("Last-Modified", "")
     if last_updated:
-        last_updated = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+        last_updated = datetime.strptime(last_updated, "%a, %d %b %Y %H:%M:%S %Z")
     else:
         last_updated = datetime.now()
     return df, last_updated
