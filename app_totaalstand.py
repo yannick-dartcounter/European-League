@@ -2,47 +2,63 @@ import streamlit as st
 import pandas as pd
 import requests
 from io import BytesIO
+from datetime import datetime
 
-# Pagina-instellingen
+# Pagina-indeling: volledig scherm
 st.set_page_config(page_title="European League Ranking", layout="wide")
 
-# Titel van de app
-st.title("🏆 Total Ranking European League")
+# Titel en uitleg
+st.title("🏆 Totale Ranking European League")
 
-# ✅ URL naar je Excelbestand op GitHub
+# GitHub raw link naar Excelbestand
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
-# ✅ Functie om bestand in te laden
-@st.cache_data(ttl=300)  # Herlaad elke 5 minuten
+# Data ophalen van GitHub (Excel)
+@st.cache_data(ttl=300)  # vernieuw elke 5 minuten
 def laad_excel_van_github(url):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        return pd.read_excel(BytesIO(response.content))
+        df = pd.read_excel(BytesIO(response.content))
+
+        # Haal ook de 'Last-Modified' header op
+        last_modified = response.headers.get("Last-Modified", None)
+        if last_modified:
+            last_updated = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+        else:
+            last_updated = None
+
+        return df, last_updated
+
     except Exception as e:
         st.error(f"❌ Fout bij laden Excelbestand:\n\n{e}")
-        return None
+        return None, None
 
-# ✅ Laad de data
-df = laad_excel_van_github(url)
+# Laad data
+df, last_updated = laad_excel_van_github(url)
 
-# ✅ Verwerk en toon de data
 if df is not None:
-    # Sorteer en voeg ranking toe
+    # Sorteer en bereken ranking
     df = df.sort_values(by=["Totaal", "Score", "180'ers"], ascending=False).reset_index(drop=True)
     df["Rang"] = df["Totaal"].rank(method="min", ascending=False).astype(int)
 
-    # Kolommen in juiste volgorde
+    # Kolommen herschikken
     df = df[["Rang", "Speler", "Score", "180'ers", "100+ finishes", "Totaal"]]
 
-    # Sidebar: filter op minimale totaalscore
+    # Sidebar filter
     st.sidebar.header("🔍 Filter")
     min_score = st.sidebar.slider("Minimale totaalscore", 0, int(df["Totaal"].max()), 0)
     df_filtered = df[df["Totaal"] >= min_score]
 
-    # Tabel tonen
+    # Laatst bijgewerkt tonen (indien beschikbaar)
+    if last_updated:
+        st.caption(f"📅 Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} (UTC)")
+
+    # Toon de tabel
     st.dataframe(df_filtered.reset_index(drop=True), use_container_width=True)
 
-    # Download-knop
+    # Downloadknop
     csv = df_filtered.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download CSV", csv, "ranking_european_league.csv", "text/csv")
+else:
+    st.warning("Er kon geen data worden geladen. Controleer of het Excelbestand in GitHub aanwezig is.")
