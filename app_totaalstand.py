@@ -1,61 +1,47 @@
 import streamlit as st
 import pandas as pd
 import requests
-from io import BytesIO
+import io
 from datetime import datetime
-from st_aggrid import AgGrid, GridOptionsBuilder
 
-st.set_page_config(page_title="European League Ranking", layout="wide")
-st.title("🏆 Total Ranking European League")
-
-url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
+st.set_page_config(page_title="Ranking European League", layout="wide")
 
 @st.cache_data(ttl=600)
 def laad_excel_van_github(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        df = pd.read_excel(BytesIO(response.content))
+    response = requests.get(url)
+    response.raise_for_status()
+    return pd.read_excel(io.BytesIO(response.content)), datetime.now()
 
-        last_modified = response.headers.get("Last-Modified")
-        last_updated = None
-        if last_modified:
-            last_updated = datetime.strptime(last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+# 📦 Excelbron
+url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
-        return df, last_updated
-    except Exception as e:
-        st.error(f"❌ Fout bij laden Excelbestand:\n\n{e}")
-        return None, None
+# 🔁 Eerste poging tot laden
+try:
+    df, last_updated = laad_excel_van_github(url)
+    # ❗ Als leeg → cache wissen en rerun
+    if df.empty or df.shape[1] == 0:
+        st.cache_data.clear()
+        st.experimental_rerun()
+except Exception as e:
+    st.error("❌ Fout bij laden Excelbestand:")
+    st.exception(e)
+    st.stop()
 
-df, last_updated = laad_excel_van_github(url)
+# 🎯 Rest van je app
+st.markdown("## 🏆 Total Ranking European League")
+st.caption(f"Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')}")
 
-if df is not None:
-    if last_updated:
-        st.caption(f"📅 Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
+st.download_button(
+    label="📥 Download CSV",
+    data=df.to_csv(index=False).encode("utf-8"),
+    file_name="totaalstand_EL1_EL8.csv",
+    mime="text/csv"
+)
 
-    df.reset_index(drop=True, inplace=True)
+# 👁️ Tabelweergave (bijv. met AgGrid of st.table)
+from st_aggrid import AgGrid, GridOptionsBuilder
 
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_default_column(resizable=True, autoHeight=True)
-    gb.configure_grid_options(domLayout='autoHeight')
-    gb.configure_side_bar(False)
-    gb.configure_pagination(enabled=False)
-
-    grid_options = gb.build()
-
-    # AgGrid zonder custom_js, gewoon werkend
-    AgGrid(
-        df,
-        gridOptions=grid_options,
-        theme="balham",
-        allow_unsafe_jscode=False,
-        reload_data=True,
-        height=None,
-        fit_columns_on_grid_load=True  # ✅ dit forceert nette kolombreedte
-    )
-
-    # Downloadknop
-    csv = df.to_csv(index=False).encode("utf-8")
-    st.download_button("📥 Download CSV", csv, "ranking_european_league.csv", "text/csv")
-else:
-    st.warning("⚠️ Kon totaalstand niet laden van GitHub.")
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_default_column(resizable=True, wrapText=True, autoHeight=True)
+gb.configure_grid_options(domLayout='normal')
+AgGrid(df, gridOptions=gb.build(), fit_columns_on_grid_load=True)
