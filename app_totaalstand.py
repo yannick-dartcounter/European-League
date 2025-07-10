@@ -8,10 +8,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 st.set_page_config(page_title="European League Ranking", layout="wide")
 st.title("🏆 Total Ranking European League")
 
-# 📁 URL naar Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
-# 📥 Cache het ophalen van het Excelbestand
 @st.cache_data(ttl=1)
 def laad_excel_van_github(url):
     try:
@@ -29,27 +27,23 @@ def laad_excel_van_github(url):
         st.error(f"❌ Fout bij laden Excelbestand:\n\n{e}")
         return None, None
 
-# 📊 Laad de data
 df, last_updated = laad_excel_van_github(url)
 
 if df is not None:
-    # 📅 Laatst bijgewerkt tonen
     if last_updated:
         st.caption(f"📅 Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-    # 🔢 Index verwijderen uit weergave
     df.reset_index(drop=True, inplace=True)
 
-    # 🔧 AgGrid instellingen
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(resizable=True, cellStyle={"textAlign": "center"})
-    gb.configure_grid_options(domLayout='autoHeight')  # 👉 Laat de grid automatisch in hoogte meegroeien
+    gb.configure_grid_options(domLayout='autoHeight')
     gb.configure_side_bar(False)
     gb.configure_pagination(enabled=False)
 
     grid_options = gb.build()
 
-    # 🧠 JavaScript om kolommen automatisch te resizen op basis van inhoud
+    # ✅ Fix voor kolombreedte: auto resize na laden
     auto_size_js = JsCode("""
         function(e) {
             setTimeout(function() {
@@ -58,7 +52,6 @@ if df is not None:
         };
     """)
 
-    # 📈 Toon de tabel
     AgGrid(
         df,
         gridOptions=grid_options,
@@ -66,11 +59,10 @@ if df is not None:
         allow_unsafe_jscode=True,
         custom_js={"onFirstDataRendered": auto_size_js},
         reload_data=True,
-        height=None,  # ➕ Geen onnodige witruimte
-        fit_columns_on_grid_load=False
+        height=None
     )
 
-    # 📤 Downloadknop
+    # 📥 Downloadknop
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download CSV", csv, "ranking_european_league.csv", "text/csv")
 else:
