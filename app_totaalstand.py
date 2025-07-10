@@ -8,7 +8,6 @@ st.set_page_config(page_title="European League Ranking", layout="wide")
 
 # Titel van de app
 st.title("🏆 Total Ranking European League")
-st.markdown("Live overzicht van de totaalscores uit EL1 t/m EL8. De ranking wordt elke 5 minuten automatisch bijgewerkt vanuit GitHub.")
 
 # ✅ URL naar je Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
