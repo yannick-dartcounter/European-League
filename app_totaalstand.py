@@ -67,7 +67,6 @@ AgGrid(
     gridOptions=grid_options,
     theme="balham",
     height=None,
-    fit_columns_on_grid_load=True,
     reload_data=True,
     allow_unsafe_jscode=False
 )
