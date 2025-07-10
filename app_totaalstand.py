@@ -37,12 +37,6 @@ except Exception as e:
 # 🕒 Laatste update tonen
 st.caption(f"📅 Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-# 🥇 Medailles toevoegen aan top 3
-medailles = ["🥇", "🥈", "🥉"]
-df.insert(0, "Medaille", "")
-for i in range(min(3, len(df))):
-    df.at[i, "Medaille"] = medailles[i]
-
 # 🔽 Downloadknop
 csv = df.to_csv(index=False).encode("utf-8")
 st.download_button(
