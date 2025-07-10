@@ -8,13 +8,13 @@ from datetime import datetime
 st.set_page_config(page_title="European League Ranking", layout="wide")
 
 # Titel
-st.title("🏆 Totale Ranking European League")
+st.title("🏆 Total Ranking European League")
 
 # GitHub raw link naar Excelbestand
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
 # Functie om Excel van GitHub te laden
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=1)
 def laad_excel_van_github(url):
     try:
         response = requests.get(url)
