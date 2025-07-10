@@ -7,7 +7,7 @@ st.set_page_config(page_title="European League Ranking", layout="wide")
 st.title("🏆 Totale Ranking European League")
 
 # URL naar Excelbestand in GitHub
-url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx
+url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
 @st.cache_data(ttl=300)
 def laad_excel_van_github(url):
