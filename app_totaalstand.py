@@ -35,28 +35,35 @@ if df is not None:
 
     df.reset_index(drop=True, inplace=True)
 
-    # Configuratie voor compacte kolommen en geen paginering
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(resizable=True, cellStyle={"textAlign": "center"})
     gb.configure_grid_options(domLayout='autoHeight')
     gb.configure_side_bar(False)
-    gb.configure_pagination(enabled=False)  # Geen paginering
+    gb.configure_pagination(enabled=False)
 
     grid_options = gb.build()
 
-    # AgGrid renderen
+    # ✅ Fix voor kolombreedte: auto resize na laden
+    auto_size_js = JsCode("""
+        function(e) {
+            setTimeout(function() {
+                e.api.sizeColumnsToFit();
+            }, 100);
+        };
+    """)
+
     AgGrid(
         df,
         gridOptions=grid_options,
         theme="balham",
-        fit_columns_on_grid_load=True,  # kolommen passen automatisch
+        allow_unsafe_jscode=True,
+        custom_js={"onFirstDataRendered": auto_size_js},
         reload_data=True,
         height=None
     )
 
-    # Downloadknop
+    # 📥 Downloadknop
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download CSV", csv, "ranking_european_league.csv", "text/csv")
-
 else:
     st.warning("⚠️ Kon totaalstand niet laden van GitHub.")
