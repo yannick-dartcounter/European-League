@@ -3,15 +3,14 @@ import pandas as pd
 import requests
 from io import BytesIO
 from datetime import datetime
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 st.set_page_config(page_title="European League Ranking", layout="wide")
 st.title("🏆 Total Ranking European League")
 
-# URL naar Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=1)
 def laad_excel_van_github(url):
     try:
         response = requests.get(url)
@@ -36,34 +35,23 @@ if df is not None:
 
     df.reset_index(drop=True, inplace=True)
 
-    # GridOptions instellen
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_default_column(resizable=True, cellStyle={"textAlign": "center"})
+    gb.configure_default_column(resizable=True, autoHeight=True)
     gb.configure_grid_options(domLayout='autoHeight')
     gb.configure_side_bar(False)
     gb.configure_pagination(enabled=False)
 
     grid_options = gb.build()
 
-    # JavaScript om automatisch kolombreedte aan te passen
-    auto_size_js = JsCode("""
-        function(e) {
-            setTimeout(function() {
-                e.api.sizeColumnsToFit();
-            }, 100);
-        };
-    """)
-
-    # Tabel weergeven met auto-sizing
+    # AgGrid zonder custom_js, gewoon werkend
     AgGrid(
         df,
         gridOptions=grid_options,
         theme="balham",
-        allow_unsafe_jscode=True,
-        custom_js={"onFirstDataRendered": auto_size_js},
+        allow_unsafe_jscode=False,
         reload_data=True,
         height=None,
-        fit_columns_on_grid_load=False
+        fit_columns_on_grid_load=True  # ✅ dit forceert nette kolombreedte
     )
 
     # Downloadknop
