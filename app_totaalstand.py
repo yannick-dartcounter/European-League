@@ -7,7 +7,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder
 
 st.set_page_config(page_title="European League Ranking", layout="wide")
 st.title("🏆 Total Ranking European League")
-st.caption(f"Laatst bijgewerkt: {last_updated.strftime('%d-%m-%Y %H:%M:%S')}")
 
 # 📁 URL naar Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
