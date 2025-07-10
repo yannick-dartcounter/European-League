@@ -8,6 +8,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 st.set_page_config(page_title="European League Ranking", layout="wide")
 st.title("🏆 Total Ranking European League")
 
+# URL naar Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
 @st.cache_data(ttl=1)
@@ -35,6 +36,7 @@ if df is not None:
 
     df.reset_index(drop=True, inplace=True)
 
+    # GridOptions instellen
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(resizable=True, cellStyle={"textAlign": "center"})
     gb.configure_grid_options(domLayout='autoHeight')
@@ -43,7 +45,7 @@ if df is not None:
 
     grid_options = gb.build()
 
-    # ✅ Fix voor kolombreedte: auto resize na laden
+    # JavaScript om automatisch kolombreedte aan te passen
     auto_size_js = JsCode("""
         function(e) {
             setTimeout(function() {
@@ -52,6 +54,7 @@ if df is not None:
         };
     """)
 
+    # Tabel weergeven met auto-sizing
     AgGrid(
         df,
         gridOptions=grid_options,
@@ -59,10 +62,11 @@ if df is not None:
         allow_unsafe_jscode=True,
         custom_js={"onFirstDataRendered": auto_size_js},
         reload_data=True,
-        height=None
+        height=None,
+        fit_columns_on_grid_load=False
     )
 
-    # 📥 Downloadknop
+    # Downloadknop
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download CSV", csv, "ranking_european_league.csv", "text/csv")
 else:
