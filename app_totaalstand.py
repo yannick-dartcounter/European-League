@@ -10,7 +10,7 @@ st.title("🏆 Total Ranking European League")
 
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
-@st.cache_data(ttl=1)
+@st.cache_data(ttl=600)
 def laad_excel_van_github(url):
     try:
         response = requests.get(url)
