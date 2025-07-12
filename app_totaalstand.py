@@ -40,6 +40,7 @@ df.rename(columns={
     "Speler": "Player",
     "180'ers": "180's",
     "Totaal": "Total"
+    "Winnaar": "Tournament wins"
 }, inplace=True)
 
 # 🚫 Verberg index (0,1,2...) in st.table
