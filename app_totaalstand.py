@@ -7,7 +7,7 @@ from datetime import datetime
 st.set_page_config(page_title="European League Totaalstand", layout="wide")
 st.title("🏆 Totaalstand – European League")
 
-# 📁 URL naar Excelbestand op GitHub
+# 📁 Excelbestand ophalen
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
 @st.cache_data(ttl=60)
@@ -33,13 +33,12 @@ except Exception as e:
     st.exception(e)
     st.stop()
 
-# ✅ Alleen gewenste kolommen selecteren
-kolommen_bewaren = [
-    "Rang", "Speler", "Score", "180'ers", "100+ finishes", "Totaal", "Winnaar", "3-Darts Gemiddelde"
-]
-df = df[kolommen_bewaren]
+# ✅ Alleen gewenste kolommen
+df = df[[
+    "Rang", "Speler", "Score", "180'ers", "100+ finishes", "3-Darts Gemiddelde", "Totaal", "Winnaar"
+]]
 
-# 🔁 Kolomnamen aanpassen voor weergave
+# 🔁 Kolomnamen hernoemen
 df.rename(columns={
     "Rang": "Pos",
     "Speler": "Player",
@@ -51,12 +50,10 @@ df.rename(columns={
     "Winnaar": "Winner"
 }, inplace=True)
 
-# 🏆 Winnaar-icoon toevoegen
-df["Winner"] = df["Winner"].apply(lambda x: "🏆" if x == 1 else "")
-
-# 📊 Tabel tonen
+# 📊 Weergave
 df.set_index("Pos", inplace=True)
 st.caption(f"📅 Laatste update: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
+
 st.dataframe(df.style.format({
     "3-Dart Avg": "{:.2f}"
 }))
