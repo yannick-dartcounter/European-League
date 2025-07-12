@@ -4,8 +4,8 @@ import requests
 from io import BytesIO
 from datetime import datetime
 
-st.set_page_config(page_title="European League Averages", layout="wide")
-st.title("🎯 3-Dart Averages – European League")
+st.set_page_config(page_title="European League Totaalstand", layout="wide")
+st.title("🏆 Totaalstand – European League")
 
 # 📁 URL naar Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
@@ -29,28 +29,29 @@ try:
         st.cache_data.clear()
         st.experimental_rerun()
 except Exception as e:
-    st.error("❌ Error loading Excel file:")
+    st.error("❌ Fout bij het laden van de totaaltabel:")
     st.exception(e)
     st.stop()
 
-# 🔧 Alleen relevante kolommen
-df = df[["Speler", "3-Darts Gemiddelde"]]
-df.rename(columns={"Speler": "Player", "3-Darts Gemiddelde": "3-Dart Avg"}, inplace=True)
+# 🔁 Kolomnamen aanpassen
+df.rename(columns={
+    "Rang": "Pos",
+    "Speler": "Player",
+    "Score": "Match Pts",
+    "180'ers": "180s",
+    "100+ finishes": "100+",
+    "Totaal": "Total",
+    "3-Darts Gemiddelde": "3-Dart Avg",
+    "Winnaar": "Winner"
+}, inplace=True)
 
-# 🚫 Verberg index (0,1,2...) in st.table
-df.index = [""] * len(df)
+# 🏆 Winnaar markeren
+df["Winner"] = df["Winner"].apply(lambda x: "🏆" if x == 1 else "")
 
-# 🕒 Laatste update tonen
-st.caption(f"📅 Last updated: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
+# 📊 Toon volledige tabel
+df.set_index("Pos", inplace=True)
 
-# 📊 Toon tabel
-st.table(df.style.format({"3-Dart Avg": "{:.2f}"}))
-
-# 🔽 Downloadknop
-csv = df.to_csv(index=False).encode("utf-8")
-st.download_button(
-    label="📥 Download 3-Dart Averages (CSV)",
-    data=csv,
-    file_name="3dart_averages_european_league.csv",
-    mime="text/csv"
-)
+st.caption(f"📅 Laatste update: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
+st.dataframe(df.style.format({
+    "3-Dart Avg": "{:.2f}"
+}))
