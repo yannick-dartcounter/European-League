@@ -42,12 +42,12 @@ df = df[[
 df.rename(columns={
     "Rang": "Pos",
     "Speler": "Player",
-    "Score": "Match Pts",
+    "Score": "Legs",
     "180'ers": "180s",
-    "100+ finishes": "100+",
+    "100+ finishes": "100+ finishes",
     "3-Darts Gemiddelde": "3-Dart Avg",
     "Totaal": "Total",
-    "Winnaar": "Winner"
+    "Winnaar": "Tournaments won"
 }, inplace=True)
 
 # 📊 Tabel instellen en weergeven
