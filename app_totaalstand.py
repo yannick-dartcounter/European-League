@@ -33,24 +33,29 @@ except Exception as e:
     st.exception(e)
     st.stop()
 
-# 🔁 Kolomnamen aanpassen
+# ✅ Alleen gewenste kolommen selecteren
+kolommen_bewaren = [
+    "Rang", "Speler", "Score", "180'ers", "100+ finishes", "Totaal", "Winnaar", "3-Darts Gemiddelde"
+]
+df = df[kolommen_bewaren]
+
+# 🔁 Kolomnamen aanpassen voor weergave
 df.rename(columns={
     "Rang": "Pos",
     "Speler": "Player",
     "Score": "Match Pts",
     "180'ers": "180s",
     "100+ finishes": "100+",
+    "3-Darts Gemiddelde": "3-Dart Avg"
     "Totaal": "Total",
-    "3-Darts Gemiddelde": "3-Dart Avg",
     "Winnaar": "Winner"
 }, inplace=True)
 
-# 🏆 Winnaar markeren
+# 🏆 Winnaar-icoon toevoegen
 df["Winner"] = df["Winner"].apply(lambda x: "🏆" if x == 1 else "")
 
-# 📊 Toon volledige tabel
+# 📊 Tabel tonen
 df.set_index("Pos", inplace=True)
-
 st.caption(f"📅 Laatste update: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 st.dataframe(df.style.format({
     "3-Dart Avg": "{:.2f}"
