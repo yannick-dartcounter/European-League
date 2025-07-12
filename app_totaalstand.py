@@ -4,8 +4,8 @@ import requests
 from io import BytesIO
 from datetime import datetime
 
-st.set_page_config(page_title="European League Ranking", layout="wide")
-st.title("🏆 Total Ranking European League")
+st.set_page_config(page_title="European League Averages", layout="wide")
+st.title("🎯 3-Dart Averages – European League")
 
 # 📁 URL naar Excelbestand op GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
@@ -33,15 +33,9 @@ except Exception as e:
     st.exception(e)
     st.stop()
 
-# 🔧 Verwijder index en vertaal kolomnamen
-df.reset_index(drop=True, inplace=True)
-df.rename(columns={
-    "Rang": "Rank",
-    "Speler": "Player",
-    "180'ers": "180's",
-    "Totaal": "Total",
-    "Winnaar": "Tournament wins"
-}, inplace=True)
+# 🔧 Alleen relevante kolommen
+df = df[["Speler", "3-Darts Gemiddelde"]]
+df.rename(columns={"Speler": "Player", "3-Darts Gemiddelde": "3-Dart Avg"}, inplace=True)
 
 # 🚫 Verberg index (0,1,2...) in st.table
 df.index = [""] * len(df)
@@ -49,14 +43,14 @@ df.index = [""] * len(df)
 # 🕒 Laatste update tonen
 st.caption(f"📅 Last updated: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-# 📊 Toon de tabel zonder afkappen
-st.table(df)
+# 📊 Toon tabel
+st.table(df.style.format({"3-Dart Avg": "{:.2f}"}))
 
 # 🔽 Downloadknop
 csv = df.to_csv(index=False).encode("utf-8")
 st.download_button(
-    label="📥 Download CSV",
+    label="📥 Download 3-Dart Averages (CSV)",
     data=csv,
-    file_name="ranking_european_league.csv",
+    file_name="3dart_averages_european_league.csv",
     mime="text/csv"
 )
