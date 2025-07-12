@@ -7,7 +7,7 @@ from datetime import datetime
 st.set_page_config(page_title="European League Totaalstand", layout="wide")
 st.title("🏆 Totaalstand – European League")
 
-# 📁 Excelbestand ophalen
+# 📁 Excelbestand ophalen vanaf GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
 @st.cache_data(ttl=60)
@@ -33,12 +33,12 @@ except Exception as e:
     st.exception(e)
     st.stop()
 
-# ✅ Alleen gewenste kolommen
+# ✅ Alleen gewenste kolommen selecteren en volgorde corrigeren
 df = df[[
     "Rang", "Speler", "Score", "180'ers", "100+ finishes", "3-Darts Gemiddelde", "Totaal", "Winnaar"
 ]]
 
-# 🔁 Kolomnamen hernoemen
+# 🔁 Kolomnamen hernoemen voor weergave
 df.rename(columns={
     "Rang": "Pos",
     "Speler": "Player",
@@ -50,10 +50,12 @@ df.rename(columns={
     "Winnaar": "Winner"
 }, inplace=True)
 
-# 📊 Weergave
+# 📊 Tabel instellen en weergeven
 df.set_index("Pos", inplace=True)
 st.caption(f"📅 Laatste update: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-st.dataframe(df.style.format({
-    "3-Dart Avg": "{:.2f}"
-}))
+st.dataframe(
+    df.style.format({"3-Dart Avg": "{:.2f}"}),
+    use_container_width=True,
+    height=len(df) * 35  # Dynamische hoogte per speler
+)
