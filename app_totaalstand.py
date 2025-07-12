@@ -39,18 +39,17 @@ df.rename(columns={
     "Rang": "Rank",
     "Speler": "Player",
     "180'ers": "180's",
-    "Totaal": "Total",
-    "Winnaar": "Tournament wins"  # ✅ Toegevoegd
+    "Totaal": "Total"
 }, inplace=True)
 
-# 🚫 Verberg numerieke index (0,1,2,...)
+# 🚫 Verberg index (0,1,2...) in st.table
 df.index = [""] * len(df)
 
 # 🕒 Laatste update tonen
 st.caption(f"📅 Last updated: {last_updated.strftime('%d-%m-%Y %H:%M:%S')} UTC")
 
-# 📊 Tabel tonen met automatische kolombreedte en responsiveness
-st.dataframe(df, use_container_width=True)
+# 📊 Toon de tabel zonder afkappen
+st.table(df)
 
 # 🔽 Downloadknop
 csv = df.to_csv(index=False).encode("utf-8")
