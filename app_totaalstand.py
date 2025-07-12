@@ -46,7 +46,7 @@ df.rename(columns={
     "Score": "Match Pts",
     "180'ers": "180s",
     "100+ finishes": "100+",
-    "3-Darts Gemiddelde": "3-Dart Avg"
+    "3-Darts Gemiddelde": "3-Dart Avg",
     "Totaal": "Total",
     "Winnaar": "Winner"
 }, inplace=True)
