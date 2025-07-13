@@ -5,7 +5,7 @@ from io import BytesIO
 from datetime import datetime
 
 st.set_page_config(page_title="European League Totaalstand", layout="wide")
-st.title("🏆 Totaalstand – European League")
+st.title("🏆 Total ranking – European League")
 
 # 📁 Excelbestand ophalen vanaf GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
