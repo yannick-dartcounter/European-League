@@ -10,7 +10,7 @@ st.title("🏆 Total ranking – European League")
 # 📁 Excelbestand ophalen vanaf GitHub
 url = "https://raw.githubusercontent.com/yannick-dartcounter/European-League/main/totaalstand_EL1_EL8.xlsx"
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=5)
 def laad_excel_van_github(url):
     response = requests.get(url)
     response.raise_for_status()
@@ -59,4 +59,5 @@ st.dataframe(
     use_container_width=True,
     height=len(df) * 35  # Dynamische hoogte per speler
 )
+
 
